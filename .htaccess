@@ -1,0 +1,50 @@
+
+# reecriture d'url grace au mod_rewrite, Cette formule redirige chaque requête sur le script index.php?page=$1
+RewriteEngine On
+
+# Signifie que si le fichier avec le nom spécifié dans le navigateur n'existe pas, ou si le répertoire dans le navigateur n'existe pas, procédez à la règle de réécriture ci-dessous 
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# La variable $1 sera remplacée par tout texte correspondant à l'expression située entre les parenthèses dans le Modèle.
+RewriteRule ^(.*)$ index.php?page=$1
+
+
+# Remettre le chemin absolu une fois le site en ligne
+# ErrorDocument 301 http://localhost:8888/Site_Association/error301
+# ErrorDocument 302 http://localhost:8888/Site_Association/error302
+# ErrorDocument 400 http://localhost:8888/Site_Association/error400
+# ErrorDocument 401 http://localhost:8888/Site_Association/error401
+# ErrorDocument 402 http://localhost:8888/Site_Association/error402
+# ErrorDocument 403 http://localhost:8888/Site_Association/error403
+# ErrorDocument 404 http://localhost:8888/Site_Association/error404
+# ErrorDocument 405 http://localhost:8888/Site_Association/error405
+# ErrorDocument 500 http://localhost:8888/Site_Association/error500
+# ErrorDocument 505 http://localhost:8888/Site_Association/error505
+
+# Empêcher les visiteurs de pouvoir consulter 
+# les répertoires 
+Options All -Indexes   
+
+# Je masque les informations serveur
+ServerSignature Off
+
+# Activation du suivi les liens symbolique
+Options +FollowSymLinks
+
+# Forcer l'encodage 
+AddDefaultCharset UTF-8
+
+#Protection XSS, clickJacking 1/empecher le chargement de la page lorsque il detecte une attaque XSS 3/Si les types MIME ne sont pas bons, les navigateurs n'execute pas les fichiers 2/empecher que son site soit partager dans des iframe
+<ifModule mod_headers.c>
+Header set X-XSS-Protection "1; mode=block" 
+Header always append X-Frame-Options SAMEORIGIN
+Header set X-Content-Type-Options: "nosniff”
+</ifModule>
+
+# protection contre les injections de fichiers
+RewriteCond %{REQUEST_METHOD} GET
+RewriteCond %{QUERY_STRING} [a-zA-Z0-9_]=http:// [OR]
+RewriteCond %{QUERY_STRING} [a-zA-Z0-9_]=(\.\.//?)+ [OR]
+RewriteCond %{QUERY_STRING} [a-zA-Z0-9_]=/([a-z0-9_.]//?)+ [NC]
+RewriteRule .* - [F]
